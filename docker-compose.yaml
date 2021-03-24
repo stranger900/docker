@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+  db:
+    image: mysql:8
+    container_name: db
+    ports:
+      - 3306:3306
+    volumes:
+      - /home/andriyhldn/workdir/mysql_database:/var/lib/mysql
+    restart: always
+    environment:     
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: teachua
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: password
+  back_end:
+    image: tomcat:jdk8
+    container_name: back
+    ports:
+      - 8080:8080
+      - 8090:8090
+    environment:
+      JWT_SECRET: teachuamain
+      DATASOURCE_URL: jdbc:mysql://localhost:3306/teachua
+      DATASOURCE_USER: myuser
+      DATASOURCE_PASSWORD: password
+    volumes:
+      - /home/andriyhldn/workdir/back:/usr/local/tomcat/webapps
+    restart: always
+    depends_on:
+      - db
+  front:
+    image: httpd:2.4
+    container_name: front
+    ports:
+      - 80:80
+      - 3000:3000
+    environment:
+      DESTINATION_URL: http://localhost:8080
+    volumes:
+      - /home/andriyhldn/workdir/front:/usr/local/apache2/htdocs
+    restart: always
+    depends_on:
+      - back_end
